@@ -7,6 +7,8 @@ using namespace std;
 void shiftHead(Node*&, Node*);
 char* removeSpaces(char*);
 char* convertToPostfix(char*);
+void printNode(Node*, Node*);
+void stringToStack(Node*, char*);
 
 int main(){
 	Node* stack = new Node("dank");
@@ -15,16 +17,72 @@ int main(){
 	char* postfix;
 	
 	strcpy(inputSpaceless, inputSpaceless);
-	cout << inputSpaceless;
+	cout << inputSpaceless << endl;
 	
+	stringToStack(stack, inputSpaceless);
+	
+	Node* current = stack;
+	printNode(stack, current);
+	
+}
+void stringToStack(Node* head, char* string){
+	int counter = 0;
+	//cout << counter << endl;
+	Node* current = NULL;
+	while(string[counter] != '\0'){
+		
+		if(current != NULL){
+			char c = string[counter];
+			char* c2 = new char[2];
+			strcpy(c2, &c);
+			c2[2] = '\0';
+			Node* n = new Node(c2);
+			
+			n->setPrevious(current);
+						
+			current->setNext(n);
+			current = n;
+			
+		}else{
+			char c = string[counter];
+			char* c2 = new char[2];
+			strcpy(c2, &c);
+			c2[2] = '\0';
+			head->setChar(c2);// = new Node(c);
+			
+			current = head;
+		}
+		
+		counter++;
+		
+	}
 	
 	
 }
-Node* stringToStack(Node*& head, char* string){
-	
-	
-	
+
+void printNode(Node* sourceNode, Node* currentNode){//prints node thr
+	if((currentNode)->getPrevious() == NULL) {//if the currentNode is the first node in the list
+		try{//this runs to prevent an error when list is empty, probably never fails here
+			cout << currentNode->getChar();
+			if(sourceNode->getNext() != NULL){
+				currentNode = sourceNode->getNext();
+				printNode(sourceNode, currentNode);
+			}
+			
+		}catch (const exception& e){
+			cout << "StudentList is empty.";
+		}
+
+	}else{
+		cout << currentNode->getChar();
+		
+		if(currentNode->getNext() != NULL){
+			currentNode = currentNode->getNext();
+			printNode(sourceNode, currentNode);
+		}
+	}
 }
+
 
 char* convertToPostfix(char* in){
 	char* out;
@@ -34,7 +92,7 @@ char* convertToPostfix(char* in){
 }
 
 
-char* removeSpaces(char* in){
+char* removeSpaces(char* in){//works
 	int count = 0;
 	while(in[count] != '\0'){	
 		count++;
@@ -57,7 +115,7 @@ char* removeSpaces(char* in){
 	return out;
 }
 
-void shiftHead(Node*& oldHead, Node* newHead){
+void shiftHead(Node*& oldHead, Node* newHead){//works
 	newHead->setNext(oldHead->getNext());
 	newHead->setPrevious(NULL);
 	delete oldHead->getChar();

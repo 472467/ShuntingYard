@@ -1,6 +1,7 @@
 #include "Node.h"
 
 Node::Node(char* c2){
+	c = new char[2];
 	strcpy(c, c2);
 	next = NULL;
 	previous = NULL;
@@ -9,6 +10,8 @@ Node::Node(char* c2){
 
 Node::~Node(){
 	delete c;
+	delete next;
+	delete previous;
 	delete this;
 }
 
