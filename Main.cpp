@@ -6,22 +6,26 @@ using namespace std;
 
 void shiftHead(Node*&, Node*);
 char* removeSpaces(char*);
-char* convertToPostfix(char*);
+Node* convertToPostfix(Node*, Node*, Node*);
 void printNode(Node*, Node*);
 void stringToStack(Node*, char*);
+void bumpDown(Node*);
+bool isNumber(char*);
+bool isOperator(char*);
 
 int main(){
 	Node* stack = new Node("dank");
-	char* input = "5 + ((1 + 2) x 4) - 3";//correct -> 5 1 2 + 4 × + 3 −
+	char* input = "5 + ((1 + 2) * 4) - 3";//correct -> 5 1 2 + 4 * + 3 −
 	char* inputSpaceless = removeSpaces(input);
 	char* postfix;
 	
 	strcpy(inputSpaceless, inputSpaceless);
-	cout << inputSpaceless << endl;
+	//cout << inputSpaceless << endl;
 	
 	stringToStack(stack, inputSpaceless);
 	
 	Node* current = stack;
+	
 	printNode(stack, current);
 	
 }
@@ -35,7 +39,7 @@ void stringToStack(Node* head, char* string){
 			char c = string[counter];
 			char* c2 = new char[2];
 			strcpy(c2, &c);
-			c2[2] = '\0';
+			c2[1] = '\0';
 			Node* n = new Node(c2);
 			
 			n->setPrevious(current);
@@ -47,7 +51,7 @@ void stringToStack(Node* head, char* string){
 			char c = string[counter];
 			char* c2 = new char[2];
 			strcpy(c2, &c);
-			c2[2] = '\0';
+			c2[1] = '\0';
 			head->setChar(c2);// = new Node(c);
 			
 			current = head;
@@ -84,10 +88,95 @@ void printNode(Node* sourceNode, Node* currentNode){//prints node thr
 }
 
 
-char* convertToPostfix(char* in){
-	char* out;
+Node* convertToPostfix(Node* head){
 	
+	if(head->getNext() == NULL){
+		cout << "Error: Only one char long";
+		return NULL;
+	}else{
+		bool running = true;
+		int closesLeft = 0;
+		bool inNumber = false;//if the number is possibly longer than 1
+		bool deleted = false;
+		Node* localCurrent = head;
+		Node* localPrevious = NULL;
+		while(running){
+			if(localCurrent->getChar() == "(" && !deleted){
+				closesLeft++;
+				localCurrent->safeDelete();
+				deleted = true;
+			}else if(localCurrent->getChar() == ")" && !deleted){
+				closesLeft--;
+				if(closesLeft < 0){
+					running = false;
+					cout << "Error: Too many closing parenthesis";
+					return NULL;
+				}
+				
+				
+				localCurrent->safeDelete();
+				deleted = true;
+			}else if(isNumber(localCurrent->getChar()) && !deleted){
+				
+			}else if(isOperator(localCurrent->getChar()) && !deleted){
+				
+			}
+		}
+	}
 	
+	return NULL;
+}
+
+bool isNumber(char* c){
+	if(c == "0"){
+		return true;
+	}else if(c == "1"){
+		return true;
+	}else if(c == "2"){
+		return true;
+	}else if(c == "3"){
+		return true;
+	}else if(c == "4"){
+		return true;
+	}else if(c == "5"){
+		return true;
+	}else if(c == "6"){
+		return true;
+	}else if(c == "7"){
+		return true;
+	}else if(c == "8"){
+		return true;
+	}else if(c == "9"){
+		return true;
+	}
+	return false;
+}
+
+bool isOperator(char* c){
+	if(c == "-"){
+		return true;
+	}else if(c == "+"){
+		return true;
+	}else if(c == "/"){
+		return true;
+	}else if(c == "*"){
+		return true;
+	}else if(c == "^"){
+		return true;
+	}
+	
+	return false;
+		
+}
+
+void bumpDown(Node* bumped){
+	if(bumped->getNext() == NULL){
+
+	}else{
+		char* c = (bumped->getNext())->getChar();
+		(bumped->getNext())->setChar(bumped->getChar());
+		bumped->setChar(c);
+	}
 	
 }
 

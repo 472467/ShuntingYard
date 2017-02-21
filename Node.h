@@ -19,6 +19,7 @@ class Node
 		void setNext(Node*);
 		Node* getPrevious();
 		void setPrevious(Node*);
+		bool safeDelete();
 };
 #endif
 
