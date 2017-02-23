@@ -3,11 +3,13 @@
 #define NODE_H
 
 #include <string.h>
+#include <iostream>
 
 class Node
 {
 	private:
 		char* c;
+		bool operatorMoved;
 		Node* next;
 		Node* previous;
 	public:
@@ -19,7 +21,9 @@ class Node
 		void setNext(Node*);
 		Node* getPrevious();
 		void setPrevious(Node*);
-		bool safeDelete();
+		void safeDelete();
+		void setOperatorMoved(bool);
+		bool getOperatorMoved();
 };
 #endif
 

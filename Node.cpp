@@ -2,6 +2,7 @@
 
 Node::Node(char* c2){
 	c = new char[2];
+	operatorMoved = false;
 	strcpy(c, c2);
 	next = NULL;
 	previous = NULL;
@@ -10,39 +11,38 @@ Node::Node(char* c2){
 
 Node::~Node(){
 	delete c;
-	//delete next;
-	//delete previous;
-	delete this;
 }
 
-bool Node::safeDelete(){
+void Node::safeDelete(){
 	if(getNext() != NULL && getPrevious() != NULL){
+		
+		
 		getNext()->setPrevious(previous);
 		getPrevious()->setNext(getNext());
+
 		delete this;
-		return true;
 		
-	}else if(getNext() != NULL){//localPrevious is NULL, means its head of NODE
+	}else if(getNext() != NULL && getPrevious() == NULL){//localPrevious is NULL, means its head of NODE
 		setChar((getNext())->getChar());
 		if(getNext()->getNext() != NULL){//this kills the next one and takes data of its next
 			setNext((getNext())->getNext());
 			(getNext()->getNext())->setPrevious(this);
 			delete getNext();
-			return true;
+
 		}else{
 			delete getNext();
 			setNext(NULL);
-			return true;
+
 		}
-	}else if(getPrevious() != NULL){
+	}else if(getPrevious() != NULL && getNext() == NULL){
 		getPrevious()->setNext(NULL);
 		delete this;
-		return true;
-	}else{
+
+	}else if(getPrevious() == NULL && getNext() == NULL){
 		delete this;
-		return true;
+
 	}
-	return true;
+
 }
 
 void Node::setChar(char* c2){
@@ -67,5 +67,14 @@ Node* Node::getNext(){
 
 void Node::setNext(Node* n){
 	next = n;
+	
+}
+
+bool Node::getOperatorMoved(){
+	return operatorMoved;
+}
+
+void Node::setOperatorMoved(bool opM){
+	operatorMoved = opM;
 	
 }

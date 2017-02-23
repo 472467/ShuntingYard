@@ -6,12 +6,12 @@ using namespace std;
 
 void shiftHead(Node*&, Node*);
 char* removeSpaces(char*);
-Node* convertToPostfix(Node*, Node*, Node*);
+Node* convertToPostfix(Node*);
 void printNode(Node*, Node*);
 void stringToStack(Node*, char*);
 void bumpDown(Node*);
-bool isNumber(char*);
-bool isOperator(char*);
+bool isNumber(char);
+bool isOperator(char);
 
 int main(){
 	Node* stack = new Node("dank");
@@ -19,12 +19,19 @@ int main(){
 	char* inputSpaceless = removeSpaces(input);
 	char* postfix;
 	
-	strcpy(inputSpaceless, inputSpaceless);
+	//strcpy(inputSpaceless, inputSpaceless);
 	//cout << inputSpaceless << endl;
 	
-	stringToStack(stack, inputSpaceless);
+	stringToStack(stack, input);
 	
 	Node* current = stack;
+	//current->safeDelete();
+	
+	
+	printNode(stack, current);
+	
+	convertToPostfix(stack);
+	current = stack;
 	
 	printNode(stack, current);
 	
@@ -89,79 +96,117 @@ void printNode(Node* sourceNode, Node* currentNode){//prints node thr
 
 
 Node* convertToPostfix(Node* head){
-	
-	if(head->getNext() == NULL){
-		cout << "Error: Only one char long";
-		return NULL;
-	}else{
-		bool running = true;
-		int closesLeft = 0;
-		bool inNumber = false;//if the number is possibly longer than 1
-		bool deleted = false;
-		Node* localCurrent = head;
-		Node* localPrevious = NULL;
-		while(running){
-			if(localCurrent->getChar() == "(" && !deleted){
-				closesLeft++;
-				localCurrent->safeDelete();
-				deleted = true;
-			}else if(localCurrent->getChar() == ")" && !deleted){
-				closesLeft--;
-				if(closesLeft < 0){
-					running = false;
-					cout << "Error: Too many closing parenthesis";
-					return NULL;
+	cout << "\n\n";
+	Node* tCurrent = head;
+
+	//keep bumping until you cant bump anymore, only bump operator if it's moved, stop bumping when it passes a certain amount of numbers
+	while(tCurrent != NULL){//figures out many numbers an operator should move down
+		char* cPoint = (tCurrent)->getChar();
+		char c = cPoint[0];
+		int bumpTimes = 0;
+		if(isOperator(c) && !(tCurrent->getOperatorMoved()) ){//runs only if num is operator and if 
+			int remainingNums = 1;
+			Node* ultraTCurrent = tCurrent;
+			Node* originalOperator = tCurrent;
+			bool tInNum = false;
+			
+			while(remainingNums >= 0 && ultraTCurrent != NULL){//while operator still needs to be pushed down stack
+				char* cPoint2 = ultraTCurrent->getChar();
+				char c2 = cPoint2[0];//less typing
+				
+				if(tInNum){//if next num is digit
+				
+					if(isNumber(c2)){
+						
+						//do nothing since we are still inNumber
+						
+					}else{
+						
+						remainingNums--;
+						
+					}
+				}else{
+					if(isNumber(c2)){
+						tInNum = true;
+					}else if(c2 == '(' || c2 == ')'){
+						remainingNums+= 2;
+					}
+					
+					
+					
+				}
+				bumpTimes++;
+				
+				ultraTCurrent = ultraTCurrent->getNext();
+				
+				if(remainingNums == 0){
+					originalOperator->setOperatorMoved(true);
 				}
 				
-				
-				localCurrent->safeDelete();
-				deleted = true;
-			}else if(isNumber(localCurrent->getChar()) && !deleted){
-				
-			}else if(isOperator(localCurrent->getChar()) && !deleted){
-				
 			}
+		}else if(c == '(' || c == ')'){
+			Node* roflTemp = NULL;
+			if(tCurrent->getPrevious() != NULL){
+				roflTemp = tCurrent->getPrevious();
+			}else if(tCurrent->getNext() != NULL){
+				roflTemp = tCurrent->getNext();
+			}else{
+				cout << "Error: Invalid Size" << endl;
+				return NULL;
+			}
+				
+			
+			tCurrent->safeDelete();
+			tCurrent = roflTemp;
 		}
+		cout << true << endl;
+		for(int x = 0; x < bumpTimes; x++){
+			bumpDown(tCurrent);
+		}
+		
+		tCurrent = tCurrent->getNext();
 	}
+	
+	
 	
 	return NULL;
 }
 
-bool isNumber(char* c){
-	if(c == "0"){
+bool isNumber(char c){
+	if(c == '0'){
 		return true;
-	}else if(c == "1"){
+	}else if(c == '1'){
 		return true;
-	}else if(c == "2"){
+	}else if(c == '2'){
 		return true;
-	}else if(c == "3"){
+	}else if(c == '3'){
 		return true;
-	}else if(c == "4"){
+	}else if(c == '4'){
 		return true;
-	}else if(c == "5"){
+	}else if(c == '5'){
 		return true;
-	}else if(c == "6"){
+	}else if(c == '6'){
 		return true;
-	}else if(c == "7"){
+	}else if(c == '7'){
 		return true;
-	}else if(c == "8"){
+	}else if(c == '8'){
 		return true;
-	}else if(c == "9"){
+	}else if(c == '9'){
 		return true;
 	}
 	return false;
 }
 
-bool isOperator(char* c){
-	if(c == "-"){
+bool isOperator(char c){
+	if(c == '-'){
 		return true;
-	}else if(c == "+"){
+	}else if(c == '+'){
 		return true;
-	}else if(c == "/"){
+	}else if(c == '/'){
 		return true;
-	}else if(c == "*"){
+	}else if(c == '*'){
 		return true;
-	}else if(c == "^"){
+	}else if(c == '^'){
 		return true;
 	}
 	
@@ -174,8 +219,11 @@ void bumpDown(Node* bumped){
 
 	}else{
 		char* c = (bumped->getNext())->getChar();
+		int tOp = (bumped->getNext())->getOperatorMoved();
 		(bumped->getNext())->setChar(bumped->getChar());
+		(bumped->getNext())->setOperatorMoved(bumped->getOperatorMoved());
 		bumped->setChar(c);
+		bumped->setOperatorMoved(tOp);
 	}
 	
 }
@@ -190,7 +238,7 @@ char* removeSpaces(char* in){//works
 	char* out = new char[count+1];
 	count = 0;
 	int count2 = 0;
-	cout << "test"<< endl;
+
 	while(in[count] != '\0'){
 		//cout << in[count] << endl;;
 		if(in[count] != ' ' && in[count] != '\0'){
