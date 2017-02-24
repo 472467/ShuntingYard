@@ -13,6 +13,7 @@ Node::~Node(){
 	delete c;
 }
 
+
 void Node::safeDelete(){
 	if(getNext() != NULL && getPrevious() != NULL){
 		
@@ -46,7 +47,8 @@ void Node::safeDelete(){
 }
 
 void Node::setChar(char* c2){
-	strcpy(c, c2);
+	c = c2;
+	//strcpy(c, c2);
 }
 
 char* Node::getChar(){

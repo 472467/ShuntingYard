@@ -15,17 +15,14 @@ bool isOperator(char);
 
 int main(){
 	Node* stack = new Node("dank");
-	char* input = "5 + ((1 + 2) * 4) - 3";//correct -> 5 1 2 + 4 * + 3 −
+	char* input = new char[100]; //"5 + ((1 + 2) * 4) - 3";//correct -> 5 1 2 + 4 * + 3 −
+	cin.getline(input, 100);
 	char* inputSpaceless = removeSpaces(input);
 	char* postfix;
-	
-	//strcpy(inputSpaceless, inputSpaceless);
-	//cout << inputSpaceless << endl;
 	
 	stringToStack(stack, input);
 	
 	Node* current = stack;
-	//current->safeDelete();
 	
 	
 	printNode(stack, current);
@@ -34,7 +31,7 @@ int main(){
 	current = stack;
 	
 	printNode(stack, current);
-	
+	//cout << "5 1 2 + 4 * + 3 -";
 }
 void stringToStack(Node* head, char* string){
 	int counter = 0;
@@ -90,6 +87,8 @@ void printNode(Node* sourceNode, Node* currentNode){//prints node thr
 		if(currentNode->getNext() != NULL){
 			currentNode = currentNode->getNext();
 			printNode(sourceNode, currentNode);
+		}else{
+			cout << endl;
 		}
 	}
 }
@@ -98,7 +97,33 @@ void printNode(Node* sourceNode, Node* currentNode){//prints node thr
 Node* convertToPostfix(Node* head){
 	cout << "\n\n";
 	Node* tCurrent = head;
-
+	Node* outputQ = new Node(" ");
+	Node* operatorQ = new Node(" ");
+	
+	
+	while(tCurrent != NULL){//figures out many numbers an operator should move down
+		char* cPoint = (tCurrent)->getChar();
+		char c = cPoint[0];
+		
+		if(isNumber(c)){
+			outputQ->setNext(tCurrent);
+			tCurrent->setPrevious(outputQ);
+			tCurrent->getNext(NULL);
+			outputQ = outputQ->getNext();
+		}else if(isOperator(c)){
+			if(operatorQ->getChar() == ' '){
+				operatorQ->setNext(tCurrent);
+				tCurrent->setPrevious(operatorQ);
+				tCurrent->getNext(NULL);
+				operatorQ = operatorQ->getNext();
+			}else {
+				
+			}
+		}
+		tCurrent = tCurrent->getNext();
+	}
+	
+	
 	//keep bumping until you cant bump anymore, only bump operator if it's moved, stop bumping when it passes a certain amount of numbers
 	while(tCurrent != NULL){//figures out many numbers an operator should move down
 		char* cPoint = (tCurrent)->getChar();
@@ -159,9 +184,18 @@ Node* convertToPostfix(Node* head){
 			tCurrent->safeDelete();
 			tCurrent = roflTemp;
 		}
-		cout << true << endl;
+		Node* n = head;
+		printNode(head, n);
+		
+		Node* operatorLoc = tCurrent;
 		for(int x = 0; x < bumpTimes; x++){
-			bumpDown(tCurrent);
+			
+			bumpDown(operatorLoc);
+			n = head;
+			//printNode(head, n);
+			if(operatorLoc->getNext() != NULL){
+				operatorLoc = operatorLoc->getNext();
+			}
 		}
 		
 		tCurrent = tCurrent->getNext();
@@ -214,19 +248,24 @@ bool isOperator(char c){
 		
 }
 
-void bumpDown(Node* bumped){
-	if(bumped->getNext() == NULL){
+void bumpDown(Node* test){
+	if(test->getNext() == NULL){
 
 	}else{
-		char* c = (bumped->getNext())->getChar();
-		int tOp = (bumped->getNext())->getOperatorMoved();
-		(bumped->getNext())->setChar(bumped->getChar());
-		(bumped->getNext())->setOperatorMoved(bumped->getOperatorMoved());
-		bumped->setChar(c);
-		bumped->setOperatorMoved(tOp);
+		Node* next = test->getNext();
+		char* nextChar = next->getChar();
+		bool nextBool = next->getOperatorMoved();
+		
+		next->setChar(test->getChar());
+		next->setOperatorMoved(test->getOperatorMoved());
+		
+		test->setChar(nextChar);
+		test->setOperatorMoved(nextBool);
+
 	}
 	
 }
+
 
 
 char* removeSpaces(char* in){//works
