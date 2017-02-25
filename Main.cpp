@@ -12,13 +12,14 @@ void stringToStack(Node*, char*);
 void bumpDown(Node*);
 bool isNumber(char);
 bool isOperator(char);
+bool checkPrecedence(char, char);
+void printHead(Node*);
 
 int main(){
 	Node* stack = new Node("dank");
-	char* input = new char[100]; //"5 + ((1 + 2) * 4) - 3";//correct -> 5 1 2 + 4 * + 3 −
-	cin.getline(input, 100);
-	char* inputSpaceless = removeSpaces(input);
-	char* postfix;
+	char* input= new char[50];// ="5 + ((1 + 2) * 4) - 3";//////correct -> 5 1 2 + 4 * + 3 −
+	cin.getline(input, 50);
+	char* postfix = "5 1 2 + 4 * + 3 −";
 	
 	stringToStack(stack, input);
 	
@@ -30,12 +31,11 @@ int main(){
 	convertToPostfix(stack);
 	current = stack;
 	
-	printNode(stack, current);
+	//printNode(stack, current);
 	//cout << "5 1 2 + 4 * + 3 -";
 }
 void stringToStack(Node* head, char* string){
 	int counter = 0;
-	//cout << counter << endl;
 	Node* current = NULL;
 	while(string[counter] != '\0'){
 		
@@ -105,103 +105,221 @@ Node* convertToPostfix(Node* head){
 		char* cPoint = (tCurrent)->getChar();
 		char c = cPoint[0];
 		
-		if(isNumber(c)){
+		if(isNumber(c)){//if operand than put to output queue
+
 			outputQ->setNext(tCurrent);
+			Node* newCurrent = tCurrent->getNext();
 			tCurrent->setPrevious(outputQ);
-			tCurrent->getNext(NULL);
+			tCurrent->setNext(NULL);
+			tCurrent = newCurrent;
 			outputQ = outputQ->getNext();
 		}else if(isOperator(c)){
-			if(operatorQ->getChar() == ' '){
+
+			char* cXPoint = (operatorQ)->getChar();
+			char cX = cXPoint[0];
+			
+			if(cX == ' ' || cX == '('){//FINE
+
 				operatorQ->setNext(tCurrent);
+				Node* newCurrent = tCurrent->getNext();
 				tCurrent->setPrevious(operatorQ);
-				tCurrent->getNext(NULL);
+				tCurrent->setNext(NULL);
+				tCurrent = newCurrent;
 				operatorQ = operatorQ->getNext();
-			}else {
 				
-			}
-		}
-		tCurrent = tCurrent->getNext();
-	}
-	
-	
-	//keep bumping until you cant bump anymore, only bump operator if it's moved, stop bumping when it passes a certain amount of numbers
-	while(tCurrent != NULL){//figures out many numbers an operator should move down
-		char* cPoint = (tCurrent)->getChar();
-		char c = cPoint[0];
-		int bumpTimes = 0;
-		if(isOperator(c) && !(tCurrent->getOperatorMoved()) ){//runs only if num is operator and if 
-			int remainingNums = 1;
-			Node* ultraTCurrent = tCurrent;
-			Node* originalOperator = tCurrent;
-			bool tInNum = false;
-			
-			while(remainingNums >= 0 && ultraTCurrent != NULL){//while operator still needs to be pushed down stack
-				char* cPoint2 = ultraTCurrent->getChar();
-				char c2 = cPoint2[0];//less typing
 				
-				if(tInNum){//if next num is digit
+			}else if(checkPrecedence(cX, c)){//if the incoming has higher precendence than the one on the operatorQueue
+				cout << c << endl;
+				cout << cX << endl;
+				operatorQ->setNext(tCurrent);//FINE
+				Node* newCurrent = tCurrent->getNext();
+				tCurrent->setPrevious(operatorQ);
+				tCurrent->setNext(NULL);
+				tCurrent = newCurrent;
+				operatorQ = operatorQ->getNext();
 				
-					if(isNumber(c2)){
-						
-						//do nothing since we are still inNumber
-						
+			}else if(!checkPrecedence(cX, c)){//if it has lower or the same operator as one on the queue
+
+				int co = 0;
+				while(!checkPrecedence(cX, c)){
+					if(operatorQ->getPrevious() != NULL){
+						outputQ->setNext(operatorQ);//swaps top of operator stack onto output stack
+						Node* previousOperator = operatorQ->getPrevious();
+						operatorQ->setPrevious(outputQ);
+						operatorQ->setNext(NULL);
+						outputQ = outputQ->getNext();
+						operatorQ = previousOperator;//moves top of operator stack onto output stack
 					}else{
-						
-						remainingNums--;
-						
+						break;
 					}
+					if(operatorQ == NULL){
+						break;
+					}
+					//co++;
+					//cout << co;
+					cXPoint = operatorQ->getChar();
+					cX = cXPoint[0];
+					
+				}
+				cout << tCurrent->getChar();
+				operatorQ->setNext(tCurrent);
+				Node* newCurrent = tCurrent->getNext();
+				tCurrent->setPrevious(operatorQ);
+				tCurrent->setNext(NULL);
+				tCurrent = newCurrent;
+				operatorQ = operatorQ->getNext();
+				
+			}
+		}else if(c == '('){//if left parentheses shove into operator queue
+
+			operatorQ->setNext(tCurrent);
+			Node* newCurrent = tCurrent->getNext();
+			tCurrent->setPrevious(operatorQ);
+			tCurrent->setNext(NULL);
+			tCurrent = newCurrent;
+			operatorQ = operatorQ->getNext();
+			
+		}else if(c == ')'){//
+ 
+			tCurrent = tCurrent->getNext();
+			char* opTemp = operatorQ->getChar();
+			char opChar = opTemp[0];
+			int co = 0;
+			
+			while(opChar != '('){//place operators on output until u find the left parentheses
+				if(operatorQ->getPrevious() != NULL){
+					Node* previousOp = operatorQ->getPrevious();
+					outputQ->setNext(operatorQ);
+					operatorQ->setPrevious(outputQ);
+					operatorQ->setNext(NULL);
+					outputQ = outputQ->getNext();
+					operatorQ= previousOp;
 				}else{
-					if(isNumber(c2)){
-						tInNum = true;
-					}else if(c2 == '(' || c2 == ')'){
-						remainingNums+= 2;
-					}
-					
-					
-					
+					break;
 				}
-				bumpTimes++;
+				opTemp = operatorQ->getChar();
+				opChar = opTemp[0];
 				
-				ultraTCurrent = ultraTCurrent->getNext();
-				
-				if(remainingNums == 0){
-					originalOperator->setOperatorMoved(true);
-				}
+				//co++;
+				//cout << co;
 				
 			}
-		}else if(c == '(' || c == ')'){
-			Node* roflTemp = NULL;
-			if(tCurrent->getPrevious() != NULL){
-				roflTemp = tCurrent->getPrevious();
-			}else if(tCurrent->getNext() != NULL){
-				roflTemp = tCurrent->getNext();
-			}else{
-				cout << "Error: Invalid Size" << endl;
-				return NULL;
-			}
-				
+			Node* o = operatorQ->getPrevious();
+			//operatorQ->safeDelete();//removes right parentheses
+			operatorQ = o;
+		}else if(c == ' ' ){
+
+			outputQ->setNext(tCurrent);
+			Node* newCurrent = tCurrent->getNext();
+			tCurrent->setPrevious(outputQ);
+			tCurrent->setNext(NULL);
+			tCurrent = newCurrent;
+			outputQ = outputQ->getNext();
 			
-			tCurrent->safeDelete();
-			tCurrent = roflTemp;
 		}
-		Node* n = head;
-		printNode(head, n);
-		
-		Node* operatorLoc = tCurrent;
-		for(int x = 0; x < bumpTimes; x++){
-			
-			bumpDown(operatorLoc);
-			n = head;
-			//printNode(head, n);
-			if(operatorLoc->getNext() != NULL){
-				operatorLoc = operatorLoc->getNext();
-			}
+		//printHead(operatorQ);
+		//printHead(operatorQ);
+	}
+	char* opTemp = operatorQ->getChar();
+	char opChar = opTemp[0];
+
+	
+	while(isOperator(opChar)){
+		Node* previousOp = operatorQ->getPrevious();
+		outputQ->setNext(operatorQ);
+		operatorQ->setPrevious(outputQ);
+		operatorQ->setNext(NULL);
+		outputQ = outputQ->getNext();
+		operatorQ= previousOp;
+		if(operatorQ == NULL){
+			break;
 		}
 		
-		tCurrent = tCurrent->getNext();
+		opTemp = operatorQ->getChar();
+		opChar = opTemp[0];
+		
+		
 	}
 	
-	
+
+	printHead(outputQ);
+	return NULL;
+}
+
+void printHead(Node* current){
+	int count = 0;
+	while(current->getPrevious() != NULL){
+		count++;
+		current = current->getPrevious();
+	}
+	cout << count << " below current." << endl;
+	Node* tCurrent = current;
+	printNode(current, tCurrent);
+}
+
+bool checkPrecedence(char o1, char o2){//left associative, checks if first operator has higher precedence than second
+//false on equavelence
+	if(o1 == '^'){
+		if(o2 == '^'){
+			return false;
+		}else if(o2 == '*'){
+			return false;
+		}else if(o2 == '/'){
+			return false;
+		}else if(o2 == '+'){
+			return false;
+		}else if(o2 == '-'){
+			return false;
+		}
+	}else if(o1 == '*'){
+		if(o2 == '^'){
+			return true;
+		}else if(o2 == '*'){
+			return false;
+		}else if(o2 == '/'){
+			return false;
+		}else if(o2 == '+'){
+			return false;
+		}else if(o2 == '-'){
+			return false;
+		}
+	}else if(o1 == '/'){
+		if(o2 == '^'){
+			return true;
+		}else if(o2 == '*'){
+			return true;
+		}else if(o2 == '/'){
+			return false;
+		}else if(o2 == '+'){
+			return false;
+		}else if(o2 == '-'){
+			return false;
+		}
+	}else if(o1 == '+'){
+		if(o2 == '^'){
+			return true;
+		}else if(o2 == '*'){
+			return true;
+		}else if(o2 == '/'){
+			return true;
+		}else if(o2 == '+'){
+			return false;
+		}else if(o2 == '-'){
+			return false;
+		}
+	}else if(o1 == '-'){
+		if(o2 == '^'){
+			return true;
+		}else if(o2 == '*'){
+			return true;
+		}else if(o2 == '/'){
+			return true;
+		}else if(o2 == '+'){
+			return true;
+		}else if(o2 == '-'){
+			return false;
+		}
+	}
 	
 	return NULL;
 }
@@ -264,31 +382,6 @@ void bumpDown(Node* test){
 
 	}
 	
-}
-
-
-
-char* removeSpaces(char* in){//works
-	int count = 0;
-	while(in[count] != '\0'){	
-		count++;
-	}
-	
-	char* out = new char[count+1];
-	count = 0;
-	int count2 = 0;
-
-	while(in[count] != '\0'){
-		//cout << in[count] << endl;;
-		if(in[count] != ' ' && in[count] != '\0'){
-			out[count2] = in[count];
-			count2++;
-		}
-		count++;
-	}
-	out[count2] = '\0';
-	
-	return out;
 }
 
 void shiftHead(Node*& oldHead, Node* newHead){//works
